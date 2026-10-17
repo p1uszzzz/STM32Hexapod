@@ -41,6 +41,7 @@
 
 /* Private variables ---------------------------------------------------------*/
 I2C_HandleTypeDef hi2c1;
+I2C_HandleTypeDef hi2c2;
 
 /* USER CODE BEGIN PV */
 
@@ -50,6 +51,7 @@ I2C_HandleTypeDef hi2c1;
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_I2C1_Init(void);
+static void MX_I2C2_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -89,11 +91,12 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_I2C1_Init();
+  MX_I2C2_Init();
   /* USER CODE BEGIN 2 */
-  PCA9685_Init(&hi2c1); // 初始化两块 PCA9685
+  PCA9685_Init(&hi2c1, &hi2c2);   // 初始化两块 PCA9685
 
-  /* 让前 4 个舵机依次转到 90° */
-  for (int ch = 0; ch < 4; ch++) 
+  /* 让 9 个舵机依次转到 90° */
+  for (int ch = 0; ch < 9; ch++) 
   {
     PCA9685_Set_Servo_Angle(ch, 90);
     HAL_Delay(300);
@@ -105,24 +108,26 @@ int main(void)
   while (1)
   {
     /* USER CODE END WHILE */
-    /*前 4 个舵机来回转动*/
-    for (int i = 0; i <= 180; i+=10)
-    {
-      for (int ch = 0; ch < 4; ch++)
-      {
-        PCA9685_Set_Servo_Angle(ch, i);
-        HAL_Delay(10);
-      }
-    }
-    for (int i = 180; i >= 0; i-=10)
-    {
-      for (int ch = 0; ch < 4; ch++)
-      {
-        PCA9685_Set_Servo_Angle(ch, i);
-        HAL_Delay(10);
-      }
-    }
+
     /* USER CODE BEGIN 3 */
+    /* 让 9 个舵机转至 180° */
+    for (int ch = 0; ch < 9; ch++) 
+    {
+      for (int i = 0; i <= 180; i+=10)
+      {
+        PCA9685_Set_Servo_Angle(ch, i);
+        HAL_Delay(10);
+      }
+    }
+    /* 让 9 个舵机转至 0° */
+    for (int ch = 0; ch < 9; ch++) 
+    {
+      for (int i = 180; i >= 0; i-=10)
+      {
+        PCA9685_Set_Servo_Angle(ch, i);
+        HAL_Delay(10);
+      }
+    }
   }
   /* USER CODE END 3 */
 }
@@ -201,6 +206,40 @@ static void MX_I2C1_Init(void)
 }
 
 /**
+  * @brief I2C2 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_I2C2_Init(void)
+{
+
+  /* USER CODE BEGIN I2C2_Init 0 */
+
+  /* USER CODE END I2C2_Init 0 */
+
+  /* USER CODE BEGIN I2C2_Init 1 */
+
+  /* USER CODE END I2C2_Init 1 */
+  hi2c2.Instance = I2C2;
+  hi2c2.Init.ClockSpeed = 100000;
+  hi2c2.Init.DutyCycle = I2C_DUTYCYCLE_2;
+  hi2c2.Init.OwnAddress1 = 0;
+  hi2c2.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
+  hi2c2.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
+  hi2c2.Init.OwnAddress2 = 0;
+  hi2c2.Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
+  hi2c2.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
+  if (HAL_I2C_Init(&hi2c2) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN I2C2_Init 2 */
+
+  /* USER CODE END I2C2_Init 2 */
+
+}
+
+/**
   * @brief GPIO Initialization Function
   * @param None
   * @retval None
@@ -213,8 +252,8 @@ static void MX_GPIO_Init(void)
 
   /* GPIO Ports Clock Enable */
   __HAL_RCC_GPIOD_CLK_ENABLE();
-  __HAL_RCC_GPIOA_CLK_ENABLE();
   __HAL_RCC_GPIOB_CLK_ENABLE();
+  __HAL_RCC_GPIOA_CLK_ENABLE();
 
   /* USER CODE BEGIN MX_GPIO_Init_2 */
 
