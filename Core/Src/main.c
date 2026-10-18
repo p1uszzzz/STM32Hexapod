@@ -95,12 +95,13 @@ int main(void)
   /* USER CODE BEGIN 2 */
   PCA9685_Init(&hi2c1, &hi2c2);   // 初始化两块 PCA9685
 
-  /* 让 9 个舵机依次转到 90° */
-  for (int ch = 0; ch < 9; ch++) 
+  /* 让 11 个舵机依次转到 90° */
+  for (int ch = 0; ch < 11; ch++) 
   {
     PCA9685_Set_Servo_Angle(ch, 90);
     HAL_Delay(300);
   }
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -110,22 +111,22 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-    /* 让 9 个舵机转至 180° */
-    for (int ch = 0; ch < 9; ch++) 
+    /* 让 11 个舵机转至 180° */
+    for (int i = 0; i <= 180; i+=5)
     {
-      for (int i = 0; i <= 180; i+=10)
+      for (int ch = 0; ch < 11; ch++) 
       {
         PCA9685_Set_Servo_Angle(ch, i);
-        HAL_Delay(10);
+        HAL_Delay(15);
       }
     }
-    /* 让 9 个舵机转至 0° */
-    for (int ch = 0; ch < 9; ch++) 
+    /* 让 11 个舵机转至 0° */
+    for (int i = 180; i >= 0; i-=5)
     {
-      for (int i = 180; i >= 0; i-=10)
+      for (int ch = 0; ch < 11; ch++) 
       {
         PCA9685_Set_Servo_Angle(ch, i);
-        HAL_Delay(10);
+        HAL_Delay(15);
       }
     }
   }
@@ -261,7 +262,21 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-
+static void I2C_Scan(I2C_HandleTypeDef *hi2c,
+                      volatile uint8_t *addrs,
+                      volatile uint8_t *count)
+{
+    *count = 0;
+    for (uint8_t addr7 = 0x08; addr7 < 0x78; addr7++) {
+        uint16_t addr8 = (uint16_t)(addr7 << 1);
+        if (HAL_I2C_IsDeviceReady(hi2c, addr8, 3, 50) == HAL_OK) {
+            if (*count < 16) {
+                addrs[*count] = addr7;
+                (*count)++;
+            }
+        }
+    }
+}
 /* USER CODE END 4 */
 
 /**

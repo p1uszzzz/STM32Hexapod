@@ -10,7 +10,7 @@
 
 /* 两块 PCA9685 的 I2C 写地址（7位地址左移一位） */
 #define PCA9685_ADDR_1      0x80    // 第一块，A0 未短接，7位地址 0x40
-#define PCA9685_ADDR_2      0x82    // 第二块，A0 短接，7位地址 0x41
+#define PCA9685_ADDR_2      0xC0    // 第二块，A5 短接，7位地址 0x60
 
 /* 函数声明 */
 void PCA9685_Init(I2C_HandleTypeDef *hi2c1, I2C_HandleTypeDef *hi2c2);
