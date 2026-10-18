@@ -11,7 +11,7 @@
 | 舵机驱动 | PCA9685（16 路 PWM，I2C） | 2 |
 | 舵机 | MG90S 金属齿轮 | 18 |
 | 电源 | 5V 10A 开关电源 | 1 |
-| 滤波 | 3300uF 电解 | 2 * 1 | + 104 陶瓷电容 | 2 * 3 |
+| 滤波 | 3300uF 电解 + 104 陶瓷电容 | 2 × 1 + 2 × 3 |
 | 结构 | 开源六足 3D 打印模型（3 舵机/腿） | 1 套 |
 
 ## 软件架构
@@ -21,16 +21,20 @@
 - HAL 库，I2C1 / I2C2 各接一块 PCA9685
 
 ### 目录结构
-Core/
-Inc/ CubeMX 生成头文件
-Src/
-main.c 主程序 + I2C 扫描测试
-pca9685.c PCA9685 驱动
-pca9685.h 寄存器定义、地址、函数声明
-Drivers/ HAL 库
-cmake/ CMake 构建脚本
-*.ioc CubeMX 工程文件
 
+```text
+.
+├── Core/
+│   └── Inc/                 # CubeMX 生成的头文件
+│       ├── pca9685.h        # 寄存器定义、地址、函数声明
+│   └── Src/
+│       ├── main.c           # 主程序 + I2C 扫描测试
+│       ├── pca9685.c        # PCA9685 驱动
+│       
+├── Drivers/                 # HAL 库
+├── cmake/                   # CMake 构建脚本
+└── STM32Hexapod.ioc         # CubeMX 工程文件
+```
 ## PCA9685 地址说明（重要）
 
 | 板子 | I2C 总线 | 7 位地址 | 8 位写地址 | 说明 |
@@ -63,4 +67,4 @@ cmake -B build/Debug -DCMAKE_BUILD_TYPE=Debug
 cmake --build build/Debug
 
 # 烧录（按实际调试器调整）
-# 使用 ST-Link / OpenOCD / Cortex-Debug 均可
+# 使用 ST-Link 等
