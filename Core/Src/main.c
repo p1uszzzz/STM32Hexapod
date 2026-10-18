@@ -262,21 +262,7 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-static void I2C_Scan(I2C_HandleTypeDef *hi2c,
-                      volatile uint8_t *addrs,
-                      volatile uint8_t *count)
-{
-    *count = 0;
-    for (uint8_t addr7 = 0x08; addr7 < 0x78; addr7++) {
-        uint16_t addr8 = (uint16_t)(addr7 << 1);
-        if (HAL_I2C_IsDeviceReady(hi2c, addr8, 3, 50) == HAL_OK) {
-            if (*count < 16) {
-                addrs[*count] = addr7;
-                (*count)++;
-            }
-        }
-    }
-}
+
 /* USER CODE END 4 */
 
 /**
