@@ -46,6 +46,8 @@ target_link_directories(${CMAKE_PROJECT_NAME} PRIVATE
 target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     # Add user sources here
     Core/Src/pca9685.c
+    Core/Src/leg_ik.c
+    Core/Src/gait.c
 )
 
 # Add include paths
