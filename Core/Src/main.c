@@ -95,8 +95,8 @@ int main(void)
   /* USER CODE BEGIN 2 */
   PCA9685_Init(&hi2c1, &hi2c2);   // 初始化两块 PCA9685
 
-  /* 让 11 个舵机依次转到 90° */
-  for (int ch = 0; ch < 11; ch++) 
+  /* 让 18 个舵机依次转到 90° */
+  for (int ch = 0; ch < 18; ch++) 
   {
     PCA9685_Set_Servo_Angle(ch, 90);
     HAL_Delay(300);
@@ -106,7 +106,7 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  while (1)
+  while (0)
   {
     /* USER CODE END WHILE */
 
