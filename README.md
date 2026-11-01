@@ -60,11 +60,33 @@
 ## 构建与烧录
 
 ```bash
-# 配置
-cmake -B build/Debug -DCMAKE_BUILD_TYPE=Debug
+# 配置（首次）
+cmake -B build/Debug -G Ninja -DCMAKE_BUILD_TYPE=Debug -DCMAKE_TOOLCHAIN_FILE=cmake/gcc-arm-none-eabi.cmake
 
 # 编译
 cmake --build build/Debug
 
-# 烧录（按实际调试器调整）
-# 使用 ST-Link 等
+# 生成 .hex / .bin
+arm-none-eabi-objcopy -O ihex   build/Debug/STM32Hexapod.elf build/Debug/STM32Hexapod.hex
+arm-none-eabi-objcopy -O binary build/Debug/STM32Hexapod.elf build/Debug/STM32Hexapod.bin
+```
+
+一键脚本（Windows，会自动找 STM32 扩展自带的 gcc / ninja / cmake）：
+
+```bat
+tools\lab\build.bat     :: 编译 + 生成 hex/bin
+tools\lab\flash.bat     :: SWD + ST-LINK 烧录
+tools\lab\flash.bat COM4  :: 串口烧录（BOOT0=1）
+tools\lab\flash.bat DFU   :: USB DFU 烧录（BOOT0=1）
+```
+
+实验室便携环境（U 盘免安装）见 [tools/lab/README-lab.md](tools/lab/README-lab.md)。
+
+## 自查工具
+
+```bash
+python tools/ik_check.py     # 腿长 / 工作空间 / 舵机角度 / 步态包络，全部算一遍
+```
+
+改了 `LEG_L1/L2/L3` 或 `LEG_HOME` 之后先跑它，能在不上机的情况下看出哪一路会打到软限位。
+

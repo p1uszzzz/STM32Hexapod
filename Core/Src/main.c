@@ -22,6 +22,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "pca9685.h"
+#include "gait.h"      /* Gait_Init / Gait_WalkSteps */
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -101,6 +102,12 @@ int main(void)
     PCA9685_Set_Servo_Angle(ch, 90);
     HAL_Delay(300);
   }
+
+  /* 上面 90° = 《舵机接线与安装手册》§7 的装配中位，先确认 18 个摇臂姿态正确，
+   * 再让六条腿落到按实测腿长（L1=22.3 / L2=57.9 / L3=110）算出的 home 姿态。
+   * 想只验证中位、不要 home 姿态时，把下面这行注释掉即可。 */
+  HAL_Delay(500);
+  Gait_Init();
 
   /* USER CODE END 2 */
 
