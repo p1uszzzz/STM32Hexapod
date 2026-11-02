@@ -20,7 +20,8 @@ git status --short
 echo.
 
 git add -A
-git commit -m "腿长改为实测值 L1=22.3/L2=57.9/L3=110；角度层按装配中位重写（中位锚点+左右方向表+18路trim+软限位）；LEG_HOME 修正坐标系并结合新腿长取 z=-L3；IK 越界改为投影到可达边界；新增 tools/ik_check.py 与实验室便携构建/烧录脚本"
+set "MSG=update: %DATE% %TIME:~0,5% （自动提交）"
+git commit -m "%MSG%"
 if errorlevel 1 (
     echo.
     echo [提示] 提交没成功。若是提示 "Please tell me who you are"，先设置身份：
