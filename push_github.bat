@@ -49,5 +49,5 @@ if errorlevel 1 (
 
 echo.
 echo [完成] 已推送到 main。
-git log --oneline -3
+git log --oneline -3 --encoding=gbk
 pause
