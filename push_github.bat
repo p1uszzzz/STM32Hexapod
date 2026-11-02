@@ -21,7 +21,7 @@ echo.
 
 git add -A
 set "MSG=update: %DATE% %TIME:~0,5% （自动提交）"
-git commit -m "%MSG%"
+git commit -q -m "%MSG%"
 if errorlevel 1 (
     echo.
     echo [提示] 提交没成功。若是提示 "Please tell me who you are"，先设置身份：
