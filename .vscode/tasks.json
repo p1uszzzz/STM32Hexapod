@@ -1,0 +1,110 @@
+{
+    // VSCode 任务：Ctrl+Shift+B = 编译；Ctrl+Shift+P → "Tasks: Run Task" 选其它
+    // 全部调用 tools\lab\*.bat，不依赖 VSCode 的 CMake / STM32 扩展，
+    // 所以在 U 盘便携版 VSCode 里也能直接用。
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "① 编译固件 (build.bat)",
+            "type": "shell",
+            "command": "${workspaceFolder}\\tools\\lab\\build.bat",
+            "args": [
+                "--no-pause"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated",
+                "clear": true
+            }
+        },
+        {
+            "label": "清理 build/Debug",
+            "type": "shell",
+            "command": "cmd",
+            "args": [
+                "/c",
+                "if exist \"build\\Debug\" (rd /s /q \"build\\Debug\" & echo 已删除 build\\Debug) else (echo 没有 build\\Debug，无需清理)"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "② 烧录：SWD / ST-LINK",
+            "type": "shell",
+            "command": "${workspaceFolder}\\tools\\lab\\flash.bat",
+            "args": [
+                "SWD"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "② 烧录：串口（示例 COM4）",
+            "type": "shell",
+            "command": "${workspaceFolder}\\tools\\lab\\flash.bat",
+            "args": [
+                "COM4"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "② 烧录：USB DFU",
+            "type": "shell",
+            "command": "${workspaceFolder}\\tools\\lab\\flash.bat",
+            "args": [
+                "DFU"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "③ 制作 U 盘（工程 + 工具链 + 固件）",
+            "type": "shell",
+            "command": "${workspaceFolder}\\tools\\lab\\prepare_usb.bat",
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "③ 制作 U 盘便携 VSCode",
+            "type": "shell",
+            "command": "${workspaceFolder}\\tools\\lab\\prepare_vscode_usb.bat",
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "自检：腿长 / 工作空间 / 步态包络",
+            "type": "shell",
+            "command": "python",
+            "args": [
+                "${workspaceFolder}\\tools\\ik_check.py"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": []
+        }
+    ]
+}

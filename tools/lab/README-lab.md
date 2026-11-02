@@ -4,7 +4,40 @@
 
 > 结论：**可以完全用 U 盘做移动环境**，因为这些工具都是"绿色"的（复制即用，不用安装）：
 > `C:\Users\P1uszzzz\AppData\Local\stm32cube\bundles` 里已经有 **gcc 14.3.1 / ninja / cmake / STM32_Programmer_CLI 2.23.0**。
-> 唯一可能要管理员权限的是 **USB 驱动**（见第 5 节），工具本身不用装。
+> 唯一要装的是 **USB 驱动**（管理员权限装一次，见第 5 节），工具本身不用装。
+
+---
+
+## 0. 全新电脑（出厂状态，什么软件都没有）——三步走
+
+**在家做完 ①②，到实验室只做 ③。**
+
+**① 编译固件**
+
+```bat
+tools\lab\build.bat
+```
+
+**② 做 U 盘（一键）**
+
+```bat
+tools\lab\prepare_usb.bat
+```
+
+它会问你 U 盘盘符，然后自动拷贝：仓库 + 编译好的固件 + 免安装工具链（gcc/ninja/cmake/programmer）+ `drivers\` 里的驱动安装包。
+**做之前先把驱动下载好放进 `tools\lab\drivers\`**，见该目录下的《下载清单.md》——新电脑唯一装不上的就是驱动。
+
+**③ 到实验室，新电脑上按顺序做**
+
+| 步骤 | 操作 | 判断成功 |
+|---|---|---|
+| 1 | 把 U 盘里 `STM32Hexapod` 和 `bundles` 两个文件夹拷到本地（比如 `D:\`），U 盘直跑慢且容易中途拔掉 | 两个文件夹都在本地 |
+| 2 | 装驱动：U 盘 `drivers\` 里对应你调试器的那一个，右键以管理员身份运行 | 设备管理器里没有黄色感叹号 |
+| 3 | 插上 ST-LINK / USB-TTL，双击 `tools\lab\check_devices.bat` | 第 1 节出现 `ST-Link` 或 `CH340` 且状态 OK；第 3 节列出 ST-LINK 序列号 |
+| 4 | 双击 `tools\lab\flash.bat`（串口用 `flash.bat COM4`，DFU 用 `flash.bat DFU`） | 打印 `File download complete` / `Success` |
+| 5 | 先不接舵机电源，只插 USB 看板子能否运行；再上舵机电源、机器人架空 | 18 路依次到 90°，再摆到 home 姿态 |
+
+> 如果实验室电脑**没有管理员权限**：找管理员装一次驱动，或借用已装过 STM32 工具的电脑，或带自己的笔记本（最稳）。
 
 ---
 
@@ -20,6 +53,9 @@ U盘\
 │   ├─ ninja\1.13.2+st.1\bin\ninja.exe
 │   ├─ cmake\<版本>\bin\cmake.exe
 │   └─ programmer\2.23.0\bin\STM32_Programmer_CLI.exe
+├─ VSCode\                           ← 可选的便携版编辑器（见第 8 节）
+│   ├─ Code.exe
+│   └─ data\                         ← 有这个文件夹 = 便携模式
 └─ drivers\                          ← 驱动安装包（可选，见第 5 节）
 ```
 
@@ -130,3 +166,93 @@ tools\lab\build.bat
 ```bat
 python tools\ik_check.py
 ```
+
+---
+
+## 8. 在实验室改代码：U 盘里的便携版 VSCode
+
+**结论：可以。** VSCode 官方支持 **便携模式（Portable Mode）**：只要 `Code.exe` 同级目录下
+存在一个 `data\` 文件夹，所有配置、扩展、缓存就都写进这个 `data\`，
+不碰注册表、不碰 `%APPDATA%`，换电脑插上就能用，**不需要安装、不需要管理员权限**。
+
+先分清一件事：**编译和烧录根本不需要 VSCode**。
+`tools\lab\build.bat` 只用 `bundles\` 里的 cmake + ninja + arm-none-eabi-gcc；
+VSCode 只是"改代码的编辑器 + 快捷键外壳"。所以三条路线可以只选一条：
+
+| 路线 | 要装什么 | U 盘占用 | 适合场景 |
+|---|---|---|---|
+| **A. 便携版 VSCode**（推荐） | 不用装 | ~500 MB | 要改代码、要跳转/补全/看报错 |
+| B. 只改几个参数 | 不用 | 0 | 改 `LEG_HOME` / `SERVO_TRIM` / 限幅，用记事本即可（见第 7 节） |
+| C. 只烧录 | 不用 | 0 | 家里已经编译好，现场只 `flash.bat` |
+
+### 8.1 一键把家里的 VSCode 做成便携版
+
+```bat
+tools\lab\prepare_vscode_usb.bat
+```
+
+问你要 U 盘盘符，然后自动做四件事：
+
+1. 找到本机已装的 VSCode（`%LOCALAPPDATA%\Programs\Microsoft VS Code`，
+   就是普通的用户级安装，**本来就不需要管理员权限**）
+2. 整个目录 robocopy 到 `U盘\VSCode\`
+3. 建 `U盘\VSCode\data\`（这一步就是"打开便携模式"的开关）
+4. 把本机扩展 `%USERPROFILE%\.vscode\extensions` 和用户设置复制进 `data\`
+
+完成后结构：
+
+```text
+VSCode\
+├─ Code.exe              ← 双击这个启动
+└─ data\
+    ├─ extensions\       ← 扩展（C/C++、中文语言包等）
+    └─ user-data\        ← 你的设置、快捷键、最近打开
+```
+
+> 也可以走官网路线：下载 `Windows x64 (zip)` 版，解压到 U 盘后**手动建一个空 `data` 文件夹**，
+> 效果完全一样。官网 zip 是最干净的便携版来源。
+
+### 8.2 实验室里怎么用
+
+| 步骤 | 操作 |
+|---|---|
+| 1 | 双击 `U盘\VSCode\Code.exe`（不用安装，第一次启动比平时慢几秒） |
+| 2 | 文件 → 打开文件夹 → 选 `STM32Hexapod`（**建议先把工程拷到本地磁盘**，见 8.3） |
+| 3 | **Ctrl+Shift+B** 编译（等价于跑 `tools\lab\build.bat`，报错会带文件/行号，点击可跳转） |
+| 4 | Ctrl+Shift+P → `Tasks: Run Task` → 选「② 烧录：SWD / 串口 / DFU」 |
+| 5 | 编译一次后 `build\Debug\compile_commands.json` 才生成，之后 C/C++ 的跳转/补全才准 |
+
+任务列表在 `.vscode\tasks.json` 里，全部直接调用 `tools\lab\*.bat`，
+**不依赖 CMake Tools / STM32 扩展**，所以便携环境下一定能用。
+
+### 8.3 四个坑，提前避开
+
+| 坑 | 说明 / 处理 |
+|---|---|
+| `data` 放错位置 | 必须和 `Code.exe` **同级**；放到别处就等于普通安装版，配置会写到用户目录 |
+| ST 官方扩展报错 | `stm32-vscode-extension` / `stm32cube-ide-*` 依赖本机的 `cube-cmake`、`cube`、`starm-clangd` shim 和 `CUBE_BUNDLE_PATH`。便携环境里找不到 → 在扩展面板里对它们选「禁用（工作区）」，编译用 Ctrl+Shift+B |
+| U 盘直跑很卡 | 编辑器索引、编译中间文件在 U 盘上都很慢。**工具放 U 盘、工程拷到本地磁盘**是标准做法 |
+| 便携版不自动更新 | 要升级就在家里重跑一次 `prepare_vscode_usb.bat` |
+
+### 8.4 如果实验室禁止插 U 盘
+
+- 最稳：带自己的笔记本（U 盘环境直接可用）；
+- 其次：只带编译好的 `STM32Hexapod.hex`，用实验室电脑上**已有的** CubeProgrammer / STM32CubeIDE 烧；
+- 提前问清楚机房的 USB 策略，比到现场发现插不上强。
+
+
+
+## 9. 关于这些 .bat 脚本的编码（改动前必看）
+
+这批脚本是 **GBK（ANSI）+ CRLF 换行** 保存的，原因是 `cmd.exe` 只按当前代码页
+（简体中文系统 = 936）解析批处理文件：如果存成 UTF-8，中文会被拆成半个字节，
+导致命令被截断，出现 `'ist' 不是内部或外部命令`、`此时不应有 ST-LINK。` 这类报错。
+
+因此：
+
+- **不要用 VSCode 直接保存这些 .bat**（VSCode 默认按 UTF-8 存盘，一存就又坏了）。
+  非改不可时：右下角编码 -> `Save with Encoding` -> 选 `GBK`，并保持 CRLF。
+- 更推荐改 `README-lab.md` / `docs/函数使用教程.md` / C 源码，别动 .bat。
+- git 里看到这些文件 "binary files differ" 是正常的（GBK 字节不是合法 UTF-8）。
+- `build.bat` 会自动找 cmake / ninja / arm-none-eabi-gcc（顺序：系统 PATH ->
+  U 盘 `bundles\` -> 本机 `%LOCALAPPDATA%\stm32cube\bundles`），找不到会明确报错。

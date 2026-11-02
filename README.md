@@ -33,8 +33,18 @@
 │       
 ├── Drivers/                 # HAL 库
 ├── cmake/                   # CMake 构建脚本
+├── docs/
+│   └── 函数使用教程.md       # 每个函数的参数/单位/示例/调参速查（先看这个）
+├── tools/
+│   ├── ik_check.py          # 纯 Python 的腿长/工作空间/角度自检
+│   └── lab/                 # 实验室便携构建 + 烧录脚本
 └── STM32Hexapod.ioc         # CubeMX 工程文件
 ```
+
+> 📖 **第一次上手 / 要改代码，先读 [docs/函数使用教程.md](docs/函数使用教程.md)**：
+> 三层结构、坐标系约定、`inverseKinematics()` / `Gait_*` / `PCA9685_*` 的参数与单位、
+> 可抄的实战例子、调参速查表、报错排查表。
+
 ## PCA9685 地址说明（重要）
 
 | 板子 | I2C 总线 | 7 位地址 | 8 位写地址 | 说明 |
@@ -52,10 +62,19 @@
 
 | 逻辑通道 | 板子 | 板内通道 | 关节 |
 |---|---|---|---|
-| 0~8 | 板 1 | 0~8 | 腿 1~3 的髋/肩/膝 |
-| 9~17 | 板 2 | 0~8 | 腿 4~6 的髋/肩/膝 |
+| 0~8 | 板 1 | 0~8 | 腿 1~3 的髋/股/膝 |
+| 9~17 | 板 2 | 0~8 | 腿 4~6 的髋/股/膝 |
 
-> 通道到具体腿/关节的映射表待 18 舵机全部接好后补全。
+具体映射（规律：`逻辑通道 = (腿号-1)*3 + 关节`，关节 0=髋 1=股 2=膝；见 `Core/Src/gait.c` 的 `CH_HIP/CH_FEMUR/CH_TIBIA`）：
+
+| 腿号 | 位置 | 髋 | 股 | 膝 |
+|---|---|---|---|---|
+| 1 | 前左 | 0 | 1 | 2 |
+| 2 | 中左 | 3 | 4 | 5 |
+| 3 | 后左 | 6 | 7 | 8 |
+| 4 | 前右 | 9 | 10 | 11 |
+| 5 | 中右 | 12 | 13 | 14 |
+| 6 | 后右 | 15 | 16 | 17 |
 
 ## 构建与烧录
 
@@ -80,7 +99,17 @@ tools\lab\flash.bat COM4  :: 串口烧录（BOOT0=1）
 tools\lab\flash.bat DFU   :: USB DFU 烧录（BOOT0=1）
 ```
 
-实验室便携环境（U 盘免安装）见 [tools/lab/README-lab.md](tools/lab/README-lab.md)。
+实验室便携环境（U 盘免安装）见 [tools/lab/README-lab.md](tools/lab/README-lab.md)：
+`prepare_usb.bat` 打包工程+工具链+固件，`prepare_vscode_usb.bat` 把 VSCode 做成 U 盘便携版。
+
+### 在 VSCode 里编译 / 烧录
+
+`.vscode/tasks.json` 已配好，**不依赖 CMake Tools 或 STM32 扩展**（它们依赖本机 shim，换电脑容易坏）：
+
+| 操作 | 快捷键 |
+|---|---|
+| 编译固件 | `Ctrl+Shift+B` |
+| 烧录 / 清理 / 制作 U 盘 / 自检 | `Ctrl+Shift+P` → `Tasks: Run Task` |
 
 ## 自查工具
 

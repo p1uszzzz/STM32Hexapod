@@ -1,0 +1,12 @@
+{
+    // 打开本工程时 VSCode 会提示安装这些扩展（推荐，不是必须）。
+    // 编译/烧录只靠 tools\lab\*.bat，扩展只影响编辑体验。
+    "recommendations": [
+        "ms-vscode.cpptools",
+        "ms-ceintl.vscode-language-pack-zh-hans"
+    ]
+    // 注意：ST 官方那套扩展（stm32-vscode-extension / stm32cube-ide-*）依赖本机
+    // 安装的 cube-cmake、cube、starm-clangd shim 和 CUBE_BUNDLE_PATH 环境变量，
+    // 换到没装过 STM32 工具的电脑（或 U 盘便携版）容易弹错，
+    // 所以本工程编译统一走 tools\lab\build.bat（Ctrl+Shift+B），不依赖它们。
+}

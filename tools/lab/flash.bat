@@ -1,15 +1,15 @@
 @echo off
-chcp 65001 >nul
+chcp 936 >nul
 setlocal enabledelayedexpansion
 cd /d "%~dp0..\.."
 
 echo ============================================================
-echo  çƒ§å½• STM32Hexapodï¼ˆSTM32F103C8T6ï¼‰
+echo  ÉÕÂ¼ STM32Hexapod£¨STM32F103C8T6£©
 echo ------------------------------------------------------------
-echo  ç”¨æ³•ï¼š
-echo    flash.bat            ç”¨ ST-LINK èµ° SWD çƒ§å½•ï¼ˆæŽ¨èï¼‰
-echo    flash.bat COM4       ç”¨ USB-TTL èµ°ä¸²å£çƒ§å½•ï¼ˆéœ€ BOOT0=1 åŽå¤ä½ï¼‰
-echo    flash.bat DFU        ç”¨èŠ¯ç‰‡è‡ªå¸¦ USB DFU çƒ§å½•ï¼ˆéœ€ BOOT0=1 åŽå¤ä½ï¼‰
+echo  ÓÃ·¨£º
+echo    flash.bat            ÓÃ ST-LINK ×ß SWD ÉÕÂ¼£¨ÍÆ¼ö£©
+echo    flash.bat COM4       ÓÃ USB-TTL ×ß´®¿ÚÉÕÂ¼£¨Ðè BOOT0=1 ºó¸´Î»£©
+echo    flash.bat DFU        ÓÃÐ¾Æ¬×Ô´ø USB DFU ÉÕÂ¼£¨Ðè BOOT0=1 ºó¸´Î»£©
 echo ============================================================
 echo.
 
@@ -17,24 +17,24 @@ set "BUNDLES=%LOCALAPPDATA%\stm32cube\bundles"
 set "USBBUNDLES=%~dp0..\..\..\bundles"
 set "CLI="
 
-REM æ‰¾ STM32_Programmer_CLI.exeï¼šUSB ä¼˜å…ˆï¼Œå…¶æ¬¡æœ¬æœº STM32 æ‰©å±•
+REM ÕÒ STM32_Programmer_CLI.exe£ºUSB ÓÅÏÈ£¬Æä´Î±¾»ú STM32 À©Õ¹
 for /d %%d in ("%USBBUNDLES%\programmer\*") do if exist "%%d\bin\STM32_Programmer_CLI.exe" set "CLI=%%d\bin\STM32_Programmer_CLI.exe"
 if not defined CLI for /d %%d in ("%BUNDLES%\programmer\*") do if exist "%%d\bin\STM32_Programmer_CLI.exe" set "CLI=%%d\bin\STM32_Programmer_CLI.exe"
 if not defined CLI (
     where STM32_Programmer_CLI.exe >nul 2>&1 && set "CLI=STM32_Programmer_CLI.exe"
 )
 if not defined CLI (
-    echo [é”™è¯¯] æ‰¾ä¸åˆ° STM32_Programmer_CLI.exe
-    echo   æŠŠå®ƒä¸€èµ·æ‹·åˆ° U ç›˜ï¼š bundles\programmer\  ï¼ˆå…å®‰è£…ï¼Œç›´æŽ¥è¿è¡Œï¼‰
+    echo [´íÎó] ÕÒ²»µ½ STM32_Programmer_CLI.exe
+    echo   °ÑËüÒ»Æð¿½µ½ U ÅÌ£º bundles\programmer\  £¨Ãâ°²×°£¬Ö±½ÓÔËÐÐ£©
     pause
     exit /b 1
 )
-echo   çƒ§å½•å·¥å…·ï¼š%CLI%
+echo   ÉÕÂ¼¹¤¾ß£º%CLI%
 
 set "HEX=build\Debug\STM32Hexapod.hex"
 set "BIN=build\Debug\STM32Hexapod.bin"
 if not exist "%HEX%" (
-    echo [é”™è¯¯] æ²¡æœ‰æ‰¾åˆ° %HEX%ï¼Œè¯·å…ˆè·‘ tools\lab\build.bat
+    echo [´íÎó] Ã»ÓÐÕÒµ½ %HEX%£¬ÇëÏÈÅÜ tools\lab\build.bat
     pause
     exit /b 1
 )
@@ -45,43 +45,43 @@ if /i "%MODE%"=="SWD" goto SWD
 
 if /i "%MODE%"=="DFU" (
     if not exist "%BIN%" (
-        echo [é”™è¯¯] DFU éœ€è¦ %BIN%ï¼Œè¯·å…ˆè·‘ build.bat
+        echo [´íÎó] DFU ÐèÒª %BIN%£¬ÇëÏÈÅÜ build.bat
         pause
         exit /b 1
     )
     echo.
-    echo [DFU] BOOT0 è·³çº¿ç½® 1ï¼ŒæŒ‰ä¸€ä¸‹å¤ä½ï¼Œç„¶åŽç»§ç»­...
+    echo [DFU] BOOT0 ÌøÏßÖÃ 1£¬°´Ò»ÏÂ¸´Î»£¬È»ºó¼ÌÐø...
     pause
     "%CLI%" -c port=USB1 -w "%BIN%" 0x08000000 -v -rst
     goto DONE
 )
 
-REM å…¶ä½™æƒ…å†µå½“ä½œä¸²å£ï¼Œä¾‹å¦‚ COM4 / COM12
+REM ÆäÓàÇé¿öµ±×÷´®¿Ú£¬ÀýÈç COM4 / COM12
 echo.
-echo [ä¸²å£] ç”¨ %MODE% çƒ§å½•ï¼šBOOT0 è·³çº¿ç½® 1ï¼ŒæŒ‰ä¸€ä¸‹å¤ä½ï¼Œç„¶åŽç»§ç»­...
-echo        çƒ§å®Œè®°å¾—æŠŠ BOOT0 æ‹¨å›ž 0 å†å¤ä½ï¼Œæ‰ä¼šè¿è¡Œæ–°ç¨‹åºã€‚
+echo [´®¿Ú] ÓÃ %MODE% ÉÕÂ¼£ºBOOT0 ÌøÏßÖÃ 1£¬°´Ò»ÏÂ¸´Î»£¬È»ºó¼ÌÐø...
+echo        ÉÕÍê¼ÇµÃ°Ñ BOOT0 ²¦»Ø 0 ÔÙ¸´Î»£¬²Å»áÔËÐÐÐÂ³ÌÐò¡£
 pause
 "%CLI%" -c port=%MODE% br=115200 -w "%HEX%" -v -rst
 goto DONE
 
 :SWD
 echo.
-echo [SWD] æ£€æŸ¥æŽ¥çº¿ï¼šSWDIO-PA13 / SWCLK-PA14 / GND / 3.3V
+echo [SWD] ¼ì²é½ÓÏß£ºSWDIO-PA13 / SWCLK-PA14 / GND / 3.3V
 "%CLI%" -c port=SWD -w "%HEX%" -v -rst
 if errorlevel 1 (
     echo.
-    echo [æç¤º] è¿žä¸ä¸Šæ—¶ä¾æ¬¡æ£€æŸ¥ï¼š
-    echo   1) ST-LINK é©±åŠ¨è£…äº†å—ï¼ˆSTSW-LINK009ï¼‰
-    echo   2) æ¿å­ä¾›ç”µäº†å—ï¼ˆST-LINK çš„ 3.3V ä¸€èˆ¬å¸¦ä¸åŠ¨ 18 ä¸ªèˆµæœºï¼‰
-    echo   3) ä¸Šæ¬¡çƒ§å½•æ˜¯å¦æ”¹äº†è¯»ä¿æŠ¤ -^> åŠ  -ob RDP=0xAA å…¨ç‰‡æ“¦é™¤
+    echo [ÌáÊ¾] Á¬²»ÉÏÊ±ÒÀ´Î¼ì²é£º
+    echo   1^) ST-LINK Çý¶¯×°ÁËÂð£¨STSW-LINK009£©
+    echo   2^) °å×Ó¹©µçÁËÂð£¨ST-LINK µÄ 3.3V Ò»°ã´ø²»¶¯ 18 ¸ö¶æ»ú£©
+    echo   3^) ÉÏ´ÎÉÕÂ¼ÊÇ·ñ¸ÄÁË¶Á±£»¤ -^> ¼Ó -ob RDP=0xAA È«Æ¬²Á³ý
 )
 
 :DONE
 echo.
 echo ============================================================
-echo  [å®‰å…¨æç¤º] ä¸Šç”µåŽ 18 è·¯èˆµæœºä¼šä¾æ¬¡è½¬åˆ° 90Â°ï¼ˆè£…é…ä¸­ä½ï¼‰ï¼Œ
-echo  å†æ‰§è¡Œ Gait_Init() æ‘†åˆ° home å§¿æ€ã€‚
-echo  â˜… ç¬¬ä¸€æ¬¡çƒ§å½•ï¼šå…ˆä¸è¦ç»™èˆµæœºä¾›ç”µï¼Œåªæ’ USB çœ‹æ¿å­æ˜¯å¦æ­£å¸¸ï¼›
-echo  â˜… ç»™èˆµæœºä¾›ç”µæ—¶æŠŠæœºå™¨äººæž¶ç©º/æ”¾å€’ï¼Œæ‰‹è¾¹éšæ—¶å¯ä»¥æ–­ç”µã€‚
+echo  [°²È«ÌáÊ¾] ÉÏµçºó 18 Â·¶æ»ú»áÒÀ´Î×ªµ½ 90¡ã£¨×°ÅäÖÐÎ»£©£¬
+echo  ÔÙÖ´ÐÐ Gait_Init^(^) °Úµ½ home ×ËÌ¬¡£
+echo  ¡ï µÚÒ»´ÎÉÕÂ¼£ºÏÈ²»Òª¸ø¶æ»ú¹©µç£¬Ö»²å USB ¿´°å×ÓÊÇ·ñÕý³££»
+echo  ¡ï ¸ø¶æ»ú¹©µçÊ±°Ñ»úÆ÷ÈË¼Ü¿Õ/·Åµ¹£¬ÊÖ±ßËæÊ±¿ÉÒÔ¶Ïµç¡£
 echo ============================================================
 pause

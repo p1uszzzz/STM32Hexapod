@@ -1,17 +1,17 @@
 @echo off
-chcp 65001 >nul
+chcp 936 >nul
 setlocal
 cd /d "%~dp0"
 
 echo ============================================================
-echo  STM32Hexapod - æäº¤å¹¶æ¨é€åˆ° GitHub
-echo  è¿œç«¯ï¼šhttps://github.com/p1uszzzz/STM32Hexapod.git  åˆ†æ”¯ï¼šmain
+echo  STM32Hexapod - Ìá½»²¢ÍÆËÍµ½ GitHub
+echo  Ô¶¶Ë£ºhttps://github.com/p1uszzzz/STM32Hexapod.git  ·ÖÖ§£ºmain
 echo ============================================================
 echo.
 
 where git >nul 2>&1
 if errorlevel 1 (
-    echo [é”™è¯¯] æ²¡æ‰¾åˆ° gitï¼Œè¯·å…ˆå®‰è£… Git for Windowsï¼šhttps://git-scm.com/download/win
+    echo [´íÎó] Ã»ÕÒµ½ git£¬ÇëÏÈ°²×° Git for Windows£ºhttps://git-scm.com/download/win
     pause
     exit /b 1
 )
@@ -20,27 +20,27 @@ git status --short
 echo.
 
 git add -A
-git commit -m "è…¿é•¿æ”¹ä¸ºå®æµ‹å€¼ L1=22.3/L2=57.9/L3=110ï¼›è§’åº¦å±‚æŒ‰è£…é…ä¸­ä½é‡å†™ï¼ˆä¸­ä½é”šç‚¹+å·¦å³æ–¹å‘è¡¨+18è·¯trim+è½¯é™ä½ï¼‰ï¼›LEG_HOME ä¿®æ­£åæ ‡ç³»å¹¶ç»“åˆæ–°è…¿é•¿å– z=-L3ï¼›IK è¶Šç•Œæ”¹ä¸ºæŠ•å½±åˆ°å¯è¾¾è¾¹ç•Œï¼›æ–°å¢ tools/ik_check.py ä¸å®éªŒå®¤ä¾¿æºæ„å»º/çƒ§å½•è„šæœ¬"
+git commit -m "ÍÈ³¤¸ÄÎªÊµ²âÖµ L1=22.3/L2=57.9/L3=110£»½Ç¶È²ã°´×°ÅäÖĞÎ»ÖØĞ´£¨ÖĞÎ»Ãªµã+×óÓÒ·½Ïò±í+18Â·trim+ÈíÏŞÎ»£©£»LEG_HOME ĞŞÕı×ø±êÏµ²¢½áºÏĞÂÍÈ³¤È¡ z=-L3£»IK Ô½½ç¸ÄÎªÍ¶Ó°µ½¿É´ï±ß½ç£»ĞÂÔö tools/ik_check.py ÓëÊµÑéÊÒ±ãĞ¯¹¹½¨/ÉÕÂ¼½Å±¾"
 if errorlevel 1 (
     echo.
-    echo [æç¤º] æäº¤æ²¡æˆåŠŸã€‚è‹¥æ˜¯æç¤º "Please tell me who you are"ï¼Œå…ˆè®¾ç½®èº«ä»½ï¼š
-    echo     git config --global user.name  "ä½ çš„åå­—"
-    echo     git config --global user.email "ä½ çš„é‚®ç®±"
-    echo     ç„¶åé‡æ–°è¿è¡Œæœ¬è„šæœ¬ã€‚
-    echo è‹¥åªæ˜¯æ²¡æœ‰æ”¹åŠ¨å¯æäº¤ï¼Œå¯ä»¥å¿½ç•¥ï¼Œä¸‹é¢ç…§æ ·ä¼šå°è¯•æ¨é€ã€‚
+    echo [ÌáÊ¾] Ìá½»Ã»³É¹¦¡£ÈôÊÇÌáÊ¾ "Please tell me who you are"£¬ÏÈÉèÖÃÉí·İ£º
+    echo     git config --global user.name  "ÄãµÄÃû×Ö"
+    echo     git config --global user.email "ÄãµÄÓÊÏä"
+    echo     È»ºóÖØĞÂÔËĞĞ±¾½Å±¾¡£
+    echo ÈôÖ»ÊÇÃ»ÓĞ¸Ä¶¯¿ÉÌá½»£¬¿ÉÒÔºöÂÔ£¬ÏÂÃæÕÕÑù»á³¢ÊÔÍÆËÍ¡£
 )
 
 echo.
-echo ---- å¼€å§‹æ¨é€ ----
+echo ---- ¿ªÊ¼ÍÆËÍ ----
 git push origin main
 if errorlevel 1 (
     echo.
-    echo [æç¤º] æ¨é€å¤±è´¥ã€‚å¸¸è§åŸå› ï¼š
-    echo   1) è¿œç«¯æœ‰åˆ«äººçš„æ–°æäº¤ -^> å…ˆæ‰§è¡Œï¼šgit pull --rebase origin main
-    echo   2) æ²¡æœ‰ç™»å½•å‡­æ® -^> å¼¹å‡ºçª—å£ç™»å½• GitHubï¼Œæˆ–ç”¨ PAT ä½œä¸ºå¯†ç 
-    echo   3) ç½‘ç»œé—®é¢˜ -^> æ£€æŸ¥ä»£ç† / é‡è¯•
+    echo [ÌáÊ¾] ÍÆËÍÊ§°Ü¡£³£¼ûÔ­Òò£º
+    echo   1^) Ô¶¶ËÓĞ±ğÈËµÄĞÂÌá½» -^> ÏÈÖ´ĞĞ£ºgit pull --rebase origin main
+    echo   2^) Ã»ÓĞµÇÂ¼Æ¾¾İ -^> µ¯³ö´°¿ÚµÇÂ¼ GitHub£¬»òÓÃ PAT ×÷ÎªÃÜÂë
+    echo   3^) ÍøÂçÎÊÌâ -^> ¼ì²é´úÀí / ÖØÊÔ
     echo.
-    echo å®Œæ•´å‘½ä»¤ï¼š
+    echo ÍêÕûÃüÁî£º
     echo     git pull --rebase origin main
     echo     git push origin main
     pause
@@ -48,6 +48,6 @@ if errorlevel 1 (
 )
 
 echo.
-echo [å®Œæˆ] å·²æ¨é€åˆ° mainã€‚
+echo [Íê³É] ÒÑÍÆËÍµ½ main¡£
 git log --oneline -3
 pause

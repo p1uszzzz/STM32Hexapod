@@ -1,63 +1,78 @@
 @echo off
-chcp 65001 >nul
+chcp 936 >nul
 setlocal enabledelayedexpansion
 cd /d "%~dp0..\.."
-REM ä»“åº“æ ¹ç›®å½•ï¼ˆæœ¬è„šæœ¬ä½äº tools\lab\ ä¸‹ï¼‰
+REM ²Ö¿â¸ùÄ¿Â¼£¨±¾½Å±¾Î»ÓÚ tools\lab\ ÏÂ£©
 
 echo ============================================================
-echo  1/3 æŸ¥æ‰¾å·¥å…·é“¾ï¼ˆcmake / ninja / arm-none-eabi-gccï¼‰
+echo  1/3 ²éÕÒ¹¤¾ßÁ´£¨cmake / ninja / arm-none-eabi-gcc£©
 echo ============================================================
 
 set "BUNDLES=%LOCALAPPDATA%\stm32cube\bundles"
 set "USBBUNDLES=%~dp0..\..\..\bundles"
 
-REM --- ä¾æ¬¡å°è¯•ï¼šç³»ç»Ÿ PATH -> USB é‡Œçš„ bundles -> æœ¬æœº STM32 æ‰©å±•çš„ bundles ---
-set "CM=cmake"
-set "NJ=ninja"
+REM --- ¹¤¾ßÁ´²éÕÒË³Ğò£ºÏµÍ³ PATH -> U ÅÌ bundles -> ±¾»ú STM32 À©Õ¹µÄ bundles ---
+set "CM="
+set "NJ="
 set "GCCPATH="
+set "GCCDIR="
+set "TCROOT="
 
-where arm-none-eabi-gcc >nul 2>&1 && set "GCCPATH=PATH"
+REM 1) ÏÈÔÚÏµÍ³ PATH ÀïÕÒ cmake / ninja
+where cmake >nul 2>&1 && set "CM=cmake"
+where ninja >nul 2>&1 && set "NJ=ninja"
 
-if not defined GCCPATH if exist "%USBBUNDLES%\gnu-tools-for-stm32" (
-    set "TCROOT=%USBBUNDLES%"
-    set "GCCPATH=USB"
-)
-if not defined GCCPATH if exist "%BUNDLES%\gnu-tools-for-stm32" (
-    set "TCROOT=%BUNDLES%"
-    set "GCCPATH=APPDATA"
-)
+REM 2) ÕÒÒ»¸ö¿ÉÓÃµÄ bundles ¸ùÄ¿Â¼£¨ÄÄ±ßÓĞ cmake ×ÓÄ¿Â¼¾ÍÓÃÄÄ±ß£©
+if not defined TCROOT if exist "%USBBUNDLES%\cmake" set "TCROOT=%USBBUNDLES%"
+if not defined TCROOT if exist "%BUNDLES%\cmake" set "TCROOT=%BUNDLES%"
+if not defined TCROOT if exist "%USBBUNDLES%\gnu-tools-for-stm32" set "TCROOT=%USBBUNDLES%"
+if not defined TCROOT if exist "%BUNDLES%\gnu-tools-for-stm32" set "TCROOT=%BUNDLES%"
 
 if defined TCROOT (
-    for /d %%d in ("%TCROOT%\gnu-tools-for-stm32\*") do set "GCCDIR=%%d\bin"
-    for /d %%d in ("%TCROOT%\ninja\*") do set "NJ=%%d\ninja.exe"
-    for /d %%d in ("%TCROOT%\cmake\*") do set "CM=%%d\bin\cmake.exe"
+    if not defined CM for /d %%d in ("%TCROOT%\cmake\*") do set "CM=%%~d\bin\cmake.exe"
+    if not defined NJ for /d %%d in ("%TCROOT%\ninja\*") do set "NJ=%%~d\ninja.exe"
+    for /d %%d in ("%TCROOT%\gnu-tools-for-stm32\*") do set "GCCDIR=%%~d\bin"
 )
 
+REM 3) gcc£ºPATH ÓÅÏÈ£¬Æä´Î bundles
+where arm-none-eabi-gcc >nul 2>&1 && set "GCCPATH=PATH"
+if not defined GCCPATH if defined GCCDIR set "GCCPATH=BUNDLE"
+
 if not defined GCCPATH (
-    echo [é”™è¯¯] æ‰¾ä¸åˆ° arm-none-eabi-gccã€‚
-    echo   æ–¹æ¡ˆ Aï¼šæŠŠ %BUNDLES% æ•´ä¸ªæ–‡ä»¶å¤¹æ‹·åˆ° U ç›˜æ ¹ç›®å½•å¹¶æ”¹åä¸º bundles
-    echo   æ–¹æ¡ˆ Bï¼šåœ¨å®éªŒå®¤ç”µè„‘è£… STM32CubeCLT / æŠŠå·¥å…·é“¾åŠ è¿› PATH
-    pause
+    echo [´íÎó] ÕÒ²»µ½ arm-none-eabi-gcc¡£
+    echo   ·½°¸ A£º°Ñ¹¤¾ßÁ´ bin Ä¿Â¼¼Ó½øÏµÍ³ PATH
+    echo   ·½°¸ B£º°Ñ bundles Õû¸öÎÄ¼ş¼Ğ·Åµ½UÅÌ¸ùÄ¿Â¼£¨½Å±¾»á×Ô¶¯Ê¹ÓÃ£©
+    if /i not "%~1"=="--no-pause" pause
+    exit /b 1
+)
+if not defined CM (
+    echo [´íÎó] ÕÒ²»µ½ cmake¡£
+    echo   ·½°¸ A£º°²×° CMake ²¢¼Ó½ø PATH
+    echo   ·½°¸ B£º°Ñ bundles Õû¸öÎÄ¼ş¼Ğ·Åµ½UÅÌ¸ùÄ¿Â¼£¨½Å±¾»á×Ô¶¯Ê¹ÓÃ£©
+    if /i not "%~1"=="--no-pause" pause
+    exit /b 1
+)
+if not defined NJ (
+    echo [´íÎó] ÕÒ²»µ½ ninja¡£
+    echo   ·½°¸ A£º°²×° ninja ²¢¼Ó½ø PATH
+    echo   ·½°¸ B£º°Ñ bundles Õû¸öÎÄ¼ş¼Ğ·Åµ½UÅÌ¸ùÄ¿Â¼£¨½Å±¾»á×Ô¶¯Ê¹ÓÃ£©
+    if /i not "%~1"=="--no-pause" pause
     exit /b 1
 )
 
-if /i "%GCCPATH%"=="PATH" (
-    echo   å·¥å…·é“¾ï¼šç³»ç»Ÿ PATH
-) else (
-    echo   å·¥å…·é“¾ï¼š%TCROOT%
-)
-echo   gcc    ï¼š%GCCPATH%
-echo   cmake  ï¼š%CM%
-echo   ninja  ï¼š%NJ%
+echo   ¹¤¾ßÁ´¸ù£º%TCROOT%
+echo   gcc    £º%GCCPATH%
+echo   cmake  £º%CM%
+echo   ninja  £º%NJ%
 
-REM è®© gcc/objcopy å¯ç”¨
-if /i not "%GCCPATH%"=="PATH" set "PATH=%GCCDIR%;%PATH%"
+REM ÈÃ gcc / objcopy / ninja / cmake ¿ÉÓÃ
+if defined GCCDIR set "PATH=%GCCDIR%;%PATH%"
 for %%p in ("%NJ%") do set "PATH=%%~dpp;%PATH%"
 for %%p in ("%CM%") do set "PATH=%%~dpp;%PATH%"
 
 echo.
 echo ============================================================
-echo  2/3 é…ç½® + ç¼–è¯‘
+echo  2/3 ÅäÖÃ + ±àÒë
 echo ============================================================
 "%CM%" -B build/Debug -G Ninja -DCMAKE_BUILD_TYPE=Debug -DCMAKE_TOOLCHAIN_FILE=cmake/gcc-arm-none-eabi.cmake
 if errorlevel 1 goto FAIL
@@ -67,7 +82,7 @@ if errorlevel 1 goto FAIL
 
 echo.
 echo ============================================================
-echo  3/3 ç”Ÿæˆ .hex / .binï¼ˆCubeProgrammer ç”¨ .elf ä¹Ÿè¡Œï¼‰
+echo  3/3 Éú³É .hex / .bin£¨CubeProgrammer ÓÃ .elf Ò²ĞĞ£©
 echo ============================================================
 arm-none-eabi-objcopy -O ihex   build/Debug/STM32Hexapod.elf build/Debug/STM32Hexapod.hex
 arm-none-eabi-objcopy -O binary build/Debug/STM32Hexapod.elf build/Debug/STM32Hexapod.bin
@@ -75,14 +90,14 @@ if errorlevel 1 goto FAIL
 arm-none-eabi-size build/Debug/STM32Hexapod.elf
 
 echo.
-echo [å®Œæˆ] äº§ç‰©ï¼š
+echo [Íê³É] ²úÎï£º
 echo     build\Debug\STM32Hexapod.elf / .hex / .bin
-echo çƒ§å½•ï¼štools\lab\flash.bat  ï¼ˆæˆ– tools\lab\flash.bat COM4  èµ°ä¸²å£ï¼‰
-pause
+echo ÉÕÂ¼£ºtools\lab\flash.bat  £¨»ò tools\lab\flash.bat COM4  ×ß´®¿Ú£©
+if /i not "%~1"=="--no-pause" pause
 exit /b 0
 
 :FAIL
 echo.
-echo [å¤±è´¥] ç¼–è¯‘æ²¡é€šè¿‡ï¼Œè¯·æŠŠä¸Šé¢çš„çº¢è‰²/é”™è¯¯ä¿¡æ¯å‘å‡ºæ¥ã€‚
-pause
+echo [Ê§°Ü] ±àÒëÃ»Í¨¹ı£¬Çë°ÑÉÏÃæµÄºìÉ«/´íÎóĞÅÏ¢·¢³öÀ´¡£
+if /i not "%~1"=="--no-pause" pause
 exit /b 1
