@@ -4,6 +4,11 @@ setlocal enabledelayedexpansion
 cd /d "%~dp0..\.."
 set "REPO=%CD%"
 set "BUNDLES=%LOCALAPPDATA%\stm32cube\bundles"
+REM Ö§³ÖÃüÁîĞĞ´«ÅÌ·û£¨·Ç½»»¥£¬·½±ã×Ô¶¯»¯ / VS Code ÈÎÎñ£©£º
+REM   prepare_usb.bat E            Ö±½Ó×öµ½ E ÅÌ
+REM   prepare_usb.bat E --no-pause ×öÍê²»Í£Áô
+set "CDRV=%~1"
+if /i "%~2"=="--no-pause" set "NOPAUSE=1"
 
 echo ============================================================
 echo  ÖÆ×÷ÊµÑéÊÒ U ÅÌ£¨Ãâ°²×°»·¾³£©
@@ -15,23 +20,27 @@ echo.
 if not exist "%BUNDLES%\gnu-tools-for-stm32" (
     echo [´íÎó] Ã»ÕÒµ½ STM32 ¹¤¾ßÁ´Ä¿Â¼£º%BUNDLES%
     echo        Èç¹ûÄãÓÃ¹ı VS Code µÄ STM32 À©Õ¹£¬Õâ¸öÄ¿Â¼Ó¦¸Ã´æÔÚ¡£
-    pause
+    if not defined NOPAUSE pause
     exit /b 1
 )
 
 echo ÏÖÓĞ U ÅÌÅÌ·û£º
 powershell -NoProfile -Command "Get-Volume | Where-Object {$_.DriveType -eq 'Removable' -and $_.DriveLetter} | ForEach-Object { '   ' + $_.DriveLetter + ':  ' + $_.FileSystemLabel + '   Ê£Óà ' + [math]::Round($_.SizeRemaining/1GB,1) + ' GB' }"
 echo.
-set /p "D=ÇëÊäÈë U ÅÌÅÌ·û£¨ÀıÈç E£©£º"
-if "%D%"=="" ( echo [È¡Ïû] & pause & exit /b 1 )
+if "%CDRV%"=="" (
+    set /p "D=ÇëÊäÈë U ÅÌÅÌ·û£¨ÀıÈç E£©£º"
+) else (
+    set "D=%CDRV%"
+)
+if "%D%"=="" goto :NO_DRIVE
 set "D=%D:~0,1%:"
-if not exist "%D%\" ( echo [´íÎó] ÅÌ·û %D% ²»´æÔÚ & pause & exit /b 1 )
+if not exist "%D%\" goto :BAD_DRIVE
 
 if not exist "%REPO%\build\Debug\STM32Hexapod.elf" (
     echo [¾¯¸æ] »¹Ã»ÓĞ±àÒë²úÎï build\Debug\STM32Hexapod.elf
     echo        ½¨ÒéÏÈÔËĞĞ tools\lab\build.bat ÔÙÖÆ×÷ U ÅÌ¡£
     echo.
-    pause
+    if not defined NOPAUSE pause
 )
 
 echo.
@@ -39,7 +48,7 @@ echo [1/4] ¸´ÖÆ²Ö¿â£¨²»º¬ .git / build ÖĞ¼äÎÄ¼ş£©
 robocopy "%REPO%" "%D%\STM32Hexapod" /E /NFL /NDL /NJH /NJS /XD "%REPO%\.git" "%REPO%\build" >nul
 if not exist "%D%\STM32Hexapod\Core\Src\gait.c" (
     echo [´íÎó] ²Ö¿â¸´ÖÆÊ§°Ü
-    pause
+    if not defined NOPAUSE pause
     exit /b 1
 )
 
@@ -80,4 +89,15 @@ if exist "%D%\drivers" (echo   Çı¶¯   £ºĞè×Ô¼ºÏÂÔØÇåµ¥ÀïµÄ°²×°°ü) else (echo   Ç
 echo.
 echo U ÅÌ×öºÃÁË¡£µ½ÊµÑéÊÒºóÕÕ tools\lab\README-lab.md µÚ 0 ½ÚµÄÈı²½×ß¼´¿É¡£
 echo ±ğÍüÁËÁíÍâ´ø£ºST-LINK »ò USB-TTL¡¢¶Å°îÏß¡¢5V µçÔ´¡¢»úÆ÷ÈË±¾Ìå¡£
-pause
+if not defined NOPAUSE pause
+exit /b 0
+
+:NO_DRIVE
+echo [È¡Ïû] Ã»ÓĞÖ¸¶¨ U ÅÌÅÌ·û
+if not defined NOPAUSE pause
+exit /b 1
+
+:BAD_DRIVE
+echo [´íÎó] ÅÌ·û %D% ²»´æÔÚ£¨¿ÉÓÃÅÌ·û¼ûÉÏÃæµÄÁĞ±í£©
+if not defined NOPAUSE pause
+exit /b 1

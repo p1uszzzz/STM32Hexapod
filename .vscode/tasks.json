@@ -3,6 +3,15 @@
     // 全部调用 tools\lab\*.bat，不依赖 VSCode 的 CMake / STM32 扩展，
     // 所以在 U 盘便携版 VSCode 里也能直接用。
     "version": "2.0.0",
+    // 制作 U 盘时会弹出输入框问盘符；直接回车用默认值 E
+    "inputs": [
+        {
+            "id": "usbDrive",
+            "type": "promptString",
+            "description": "U 盘盘符（例如 E，不要带冒号）",
+            "default": "E"
+        }
+    ],
     "tasks": [
         {
             "label": "① 编译固件 (build.bat)",
@@ -80,6 +89,10 @@
             "label": "③ 制作 U 盘（工程 + 工具链 + 固件）",
             "type": "shell",
             "command": "${workspaceFolder}\\tools\\lab\\prepare_usb.bat",
+            "args": [
+                "${input:usbDrive}",
+                "--no-pause"
+            ],
             "options": {
                 "cwd": "${workspaceFolder}"
             },
@@ -89,6 +102,9 @@
             "label": "③ 制作 U 盘便携 VSCode",
             "type": "shell",
             "command": "${workspaceFolder}\\tools\\lab\\prepare_vscode_usb.bat",
+            "args": [
+                "${input:usbDrive}"
+            ],
             "options": {
                 "cwd": "${workspaceFolder}"
             },

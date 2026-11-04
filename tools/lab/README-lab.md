@@ -24,6 +24,8 @@ tools\lab\build.bat
 tools\lab\prepare_usb.bat
 ```
 
+也可以把盘符当参数传，全程不提问（适合脚本 / VS Code 任务）：`tools\lab\prepare_usb.bat E`，做完不停留再加 `--no-pause`。
+
 它会问你 U 盘盘符，然后自动拷贝：仓库 + 编译好的固件 + 免安装工具链（gcc/ninja/cmake/programmer）+ `drivers\` 里的驱动安装包。
 **做之前先把驱动下载好放进 `tools\lab\drivers\`**，见该目录下的《下载清单.md》——新电脑唯一装不上的就是驱动。
 
