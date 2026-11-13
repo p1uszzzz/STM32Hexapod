@@ -193,22 +193,30 @@ VSCode 只是"改代码的编辑器 + 快捷键外壳"。所以三条路线可�
 tools\lab\prepare_vscode_usb.bat
 ```
 
-问你要 U 盘盘符，然后自动做四件事：
+问你要 U 盘盘符（也可以直接传：`tools\lab\prepare_vscode_usb.bat E`），然后自动做五件事：
 
 1. 找到本机已装的 VSCode（`%LOCALAPPDATA%\Programs\Microsoft VS Code`，
    就是普通的用户级安装，**本来就不需要管理员权限**）
 2. 整个目录 robocopy 到 `U盘\VSCode\`
 3. 建 `U盘\VSCode\data\`（这一步就是"打开便携模式"的开关）
-4. 把本机扩展 `%USERPROFILE%\.vscode\extensions` 和用户设置复制进 `data\`
+4. 把本机扩展 `%USERPROFILE%\.vscode\extensions` 复制进 `data\extensions`，
+   并**删掉扩展注册表 `extensions.json`**（原因见第 10 节）
+5. 用 `portable\make_portable_settings.ps1` 生成实验室友好的
+   `data\user-data\User\settings.json`（剔除指死本机 `C:` 的路径、关掉受限模式/自动更新/遥测），
+   同时放入 `启动-VSCode-便携.cmd` 和 `诊断-扩展加载.cmd`
+
+加 `--reuse` 可以跳过 1 GB 的本体复制，只重建 data 部分（日常改脚本后重跑用）。
 
 完成后结构：
 
 ```text
 VSCode\
-├─ Code.exe              ← 双击这个启动
+├─ Code.exe                  ← 直接双击也能开，但不保证便携（见第 10 节）
+├─ 启动-VSCode-便携.cmd      ← **推荐双击这个**：强制用 U 盘自己的配置/扩展目录
+├─ 诊断-扩展加载.cmd         ← 出问题时双击，生成 诊断报告.txt
 └─ data\
-    ├─ extensions\       ← 扩展（C/C++、中文语言包等）
-    └─ user-data\        ← 你的设置、快捷键、最近打开
+    ├─ extensions\           ← 扩展（C/C++、中文语言包等）
+    └─ user-data\            ← 你的设置、快捷键、最近打开
 ```
 
 > 也可以走官网路线：下载 `Windows x64 (zip)` 版，解压到 U 盘后**手动建一个空 `data` 文件夹**，
@@ -218,11 +226,12 @@ VSCode\
 
 | 步骤 | 操作 |
 |---|---|
-| 1 | 双击 `U盘\VSCode\Code.exe`（不用安装，第一次启动比平时慢几秒） |
+| 1 | 双击 `U盘\VSCode\启动-VSCode-便携.cmd`（**别直接双击 Code.exe**，原因见第 10 节） |
 | 2 | 文件 → 打开文件夹 → 选 `STM32Hexapod`（**建议先把工程拷到本地磁盘**，见 8.3） |
 | 3 | **Ctrl+Shift+B** 编译（等价于跑 `tools\lab\build.bat`，报错会带文件/行号，点击可跳转） |
 | 4 | Ctrl+Shift+P → `Tasks: Run Task` → 选「② 烧录：SWD / 串口 / DFU」 |
 | 5 | 编译一次后 `build\Debug\compile_commands.json` 才生成，之后 C/C++ 的跳转/补全才准 |
+| 6 | 万一扩展/设置没出来：双击 `诊断-扩展加载.cmd`，把生成的 `诊断报告.txt` 发我 |
 
 任务列表在 `.vscode\tasks.json` 里，全部直接调用 `tools\lab\*.bat`，
 **不依赖 CMake Tools / STM32 扩展**，所以便携环境下一定能用。
@@ -232,6 +241,7 @@ VSCode\
 | 坑 | 说明 / 处理 |
 |---|---|
 | `data` 放错位置 | 必须和 `Code.exe` **同级**；放到别处就等于普通安装版，配置会写到用户目录 |
+| 直接双击 `Code.exe` | 便携模式要靠"自动识别"；家里电脑本来就有一份 `%APPDATA%\Code` 配置，看起来正常，换到实验室空电脑上可能退回普通模式 → 扩展和设置全空。**一律用 `启动-VSCode-便携.cmd`** |
 | ST 官方扩展报错 | `stm32-vscode-extension` / `stm32cube-ide-*` 依赖本机的 `cube-cmake`、`cube`、`starm-clangd` shim 和 `CUBE_BUNDLE_PATH`。便携环境里找不到 → 在扩展面板里对它们选「禁用（工作区）」，编译用 Ctrl+Shift+B |
 | U 盘直跑很卡 | 编辑器索引、编译中间文件在 U 盘上都很慢。**工具放 U 盘、工程拷到本地磁盘**是标准做法 |
 | 便携版不自动更新 | 要升级就在家里重跑一次 `prepare_vscode_usb.bat` |
@@ -258,3 +268,49 @@ VSCode\
 - git 里看到这些文件 "binary files differ" 是正常的（GBK 字节不是合法 UTF-8）。
 - `build.bat` 会自动找 cmake / ninja / arm-none-eabi-gcc（顺序：系统 PATH ->
   U 盘 `bundles\` -> 本机 `%LOCALAPPDATA%\stm32cube\bundles`），找不到会明确报错。
+
+
+
+## 10. 便携 VSCode「家里正常、实验室扩展和配置全空」的成因与修复（2026-11-13）
+
+现象：U 盘插在自己电脑上打开正常（扩展、设置都在），拿到实验室的空电脑上打开，
+扩展列表空的、设置也不生效。
+
+查到两个真凶：
+
+1. **便携模式是"自动识别"的**。只有当 `Code.exe` 同级有 `data\` 时 VSCode 才用便携目录，
+   否则照样去读 `%APPDATA%\Code`（用户目录）。家里电脑本来就有这份用户目录
+   （当初就是从这里复制出来的），所以看起来一切正常；实验室空电脑没有，
+   于是"扩展和配置全空"。
+2. **复制过来的扩展注册表是绝对路径**。`data\extensions\extensions.json` 里每条记录的
+   `location.path` 都写成 `C:\Users\<你的用户名>\.vscode\extensions\<扩展名>`。
+   换一台电脑这个路径根本不存在，VSCode 就认为这些扩展"无效/已卸载"，
+   于是扩展列表变空——即使在便携模式里也一样。
+
+修复（现在的 `prepare_vscode_usb.bat` 会自动做，无需手改）：
+
+| 措施 | 做了什么 |
+|---|---|
+| `启动-VSCode-便携.cmd` | 启动时用 `%~dp0` 认出 U 盘盘符，显式传 `--user-data-dir` 和 `--extensions-dir` 指向 U 盘的 `data\`，**不再依赖自动识别**；同时加 `--disable-workspace-trust` |
+| 启动前删注册表 | 每次启动都删掉 `data\extensions\extensions.json`，让 VSCode 按磁盘上的真实目录重新扫描重建（换盘符也不会错） |
+| 用户设置清洗 | `portable\make_portable_settings.ps1` 备份家里原设置成 `settings.home-orig.json`，生成的 `settings.json` 剔除 `cmake.environment`、`stm32cube-ide-core...productSTM32CubeMX.executablePath` 这两条指死 `C:` 的键，并关闭受限模式/自动更新/遥测/打开工程即配置 |
+| `诊断-扩展加载.cmd` | 一键把"程序目录 / data 是否在 / 版本 / 扩展文件夹数 / 实际识别到的扩展 / 日志目录 / 用户设置"写进 `诊断报告.txt` |
+
+2026-11-13 在本机实测（VSCode 1.133.0，便携版放 E:）：
+
+- `启动-VSCode-便携.cmd` 的同一组参数启动后，`data\user-data\logs\<时间戳>\window1\exthost\exthost.log`
+  里出现 `ExtensionService#_doActivateExtension STMicroelectronics.stm32cube-ide-*` 等，
+  说明扩展**确实从 U 盘加载并激活**了；日志也落在 U 盘而不是用户目录。
+- 用 `bin\code.cmd --list-extensions --extensions-dir ... --user-data-dir ...`
+  识别到 27 个扩展（C/C++、CMake Tools、中文语言包、ST 全套）。
+- 注意：新版 VSCode 的 CLI 在 `bin\code.cmd` 里（`Code.exe` 直接加 `--list-extensions`
+  会报 `bad option`），诊断脚本已经改用 `bin\code.cmd`。
+
+到实验室还是不对时，按 `诊断报告.txt` 判读：
+
+| 报告里的症状 | 含义 / 处理 |
+|---|---|
+| `[5]` 段为空 | 扩展目录没拷全或盘符不对：看 `[4]` 的文件夹数，正常 28 左右 |
+| `[6]` 里只有"普通模式 logs : 有" | 你开的是 `Code.exe` 而不是 `启动-VSCode-便携.cmd` |
+| `[2] data : 缺失` | U 盘里的 `data` 文件夹被删/被挪了，重跑 `prepare_vscode_usb.bat --reuse` |
+| `[3]` 版本为空 | `bin\code.cmd` 缺失或被杀软拦了，换台电脑重做 U 盘 |
