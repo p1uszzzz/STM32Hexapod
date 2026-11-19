@@ -109,6 +109,12 @@ int main(void)
   HAL_Delay(500);
   Gait_Init();
 
+  /* 单腿调试示例（取消注释即可试，详见 docs/函数使用教程.md §3.2）：
+   *   Gait_SetFoot(2, 0.0f, 117.2f, -45.2f);        // 2 号腿抬高 30 mm
+   *   Gait_SetJointAngles(1, 50.0f, 74.0f, 72.0f);  // 1 号腿直接给关节角
+   *   Gait_Home();                                  // 六条腿回站姿
+   * 腿号 1~6 = 前左 / 中左 / 后左 / 前右 / 中右 / 后右 */
+
   /* USER CODE END 2 */
 
   /* Infinite loop */

@@ -7,6 +7,10 @@
 /* 若编译器报 M_PI 未定义，取消下面这行注释 */
 /* #define M_PI 3.14159265358979323846f */
 
+#ifndef DEG2RAD
+#define DEG2RAD  0.0174532925f   /* 度 → 弧度，单腿角度接口用 */
+#endif
+
 /* ========================================================================
  * 6 条腿的 home 位置（相对髋关节旋转中心，单位 mm）
  * ------------------------------------------------------------------------
@@ -141,20 +145,70 @@ static uint8_t tibia_angle(int leg, float rad) {
                        LEG_MIN_DEG, LEG_MAX_DEG);
 }
 
+/* ------------------------------------------------------------------------
+ * 把一条腿的三个 IK 角写进对应的三个舵机
+ *   i：腿下标 0~5（对外接口的腿号 1~6 减 1）
+ * 单腿控制、Gait_Init、Gait_TripodStep 都走这里，保证换算只写一份。
+ * ------------------------------------------------------------------------ */
+static void write_leg(uint8_t i, LegAngles a) {
+    PCA9685_Set_Servo_Angle(CH_HIP[i],   hip_angle(i,   a.hip));
+    PCA9685_Set_Servo_Angle(CH_FEMUR[i], femur_angle(i, a.femur));
+    PCA9685_Set_Servo_Angle(CH_TIBIA[i], tibia_angle(i, a.tibia));
+}
+
 /* ========================================================================
  * 函数：Gait_Init
  * 作用：上电初始化，让 6 条腿全部回到 home 位置
  * ======================================================================== */
 void Gait_Init(void) {
-    for (int i = 0; i < LEG_NUM; i++) {
-        FootPos p = LEG_HOME[i];
-        LegAngles a = inverseKinematics(p.x, p.y, p.z);
+    Gait_Home();
+}
 
-        /* 改动点 5：写舵机统一走 hip/femur/tibia_angle 包装 */
-        PCA9685_Set_Servo_Angle(CH_HIP[i],   hip_angle(i,   a.hip));
-        PCA9685_Set_Servo_Angle(CH_FEMUR[i], femur_angle(i, a.femur));
-        PCA9685_Set_Servo_Angle(CH_TIBIA[i], tibia_angle(i, a.tibia));
+/* ========================================================================
+ * 函数：Gait_Home
+ * 作用：6 条腿全部回到 LEG_HOME（运行中也可以随时调用）
+ * 非阻塞、无延时：只写 18 路舵机目标角度，转动时间由舵机自己决定。
+ * ======================================================================== */
+void Gait_Home(void) {
+    for (uint8_t i = 0; i < LEG_NUM; i++) {
+        FootPos p = LEG_HOME[i];
+        write_leg(i, inverseKinematics(p.x, p.y, p.z));
     }
+}
+
+/* ========================================================================
+ * 函数：Gait_SetFoot
+ * 作用：单腿按足端坐标摆位（IK + 角度层，最常用）
+ * ------------------------------------------------------------------------
+ * leg  ：腿号 1~6；越界直接返回
+ * x/y/z：足端相对该腿髋关节旋转中心的坐标，mm（x 前、y 左、z 上）
+ * 例：Gait_SetFoot(2, 0.0f, 117.2f, -75.2f);   // 2 号腿摆到 home
+ * ======================================================================== */
+void Gait_SetFoot(uint8_t leg, float x, float y, float z) {
+    if (leg < 1 || leg > LEG_NUM) return;
+    write_leg((uint8_t)(leg - 1), inverseKinematics(x, y, z));
+}
+
+/* ========================================================================
+ * 函数：Gait_SetJointAngles
+ * 作用：单腿直接给关节角（跳过 IK，单位：度），标定单个舵机最直观
+ * ------------------------------------------------------------------------
+ * hip_deg  ：髋方位角，0 = 正前，+90 = 正左
+ * femur_deg：股关节 ∠1（相对中性轴，±90）
+ * tibia_deg：膝关节 ∠2（相对股连杆延长线，±90）
+ * 例：Gait_SetJointAngles(1, 50.0f, 74.0f, 72.0f);
+ *     → 舵机 髋 50 / 股 164 / 膝 162（1 号腿的 home）
+ * 注意：这里不做工作空间检查，只靠 ±90° 与软限位兜底。
+ * ======================================================================== */
+void Gait_SetJointAngles(uint8_t leg, float hip_deg, float femur_deg, float tibia_deg) {
+    if (leg < 1 || leg > LEG_NUM) return;
+
+    LegAngles a;
+    a.hip   = hip_deg   * DEG2RAD;
+    a.femur = femur_deg * DEG2RAD;
+    a.tibia = tibia_deg * DEG2RAD;
+
+    write_leg((uint8_t)(leg - 1), a);
 }
 
 /* ========================================================================
@@ -204,10 +258,7 @@ void Gait_TripodStep(float stride, float lift, float phase) {
         }
 
         LegAngles a = inverseKinematics(x, y, z);
-
-        PCA9685_Set_Servo_Angle(CH_HIP[i],   hip_angle(i,   a.hip));
-        PCA9685_Set_Servo_Angle(CH_FEMUR[i], femur_angle(i, a.femur));
-        PCA9685_Set_Servo_Angle(CH_TIBIA[i], tibia_angle(i, a.tibia));
+        write_leg((uint8_t)i, a);
     }
 }
 
