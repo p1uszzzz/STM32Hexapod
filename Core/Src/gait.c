@@ -109,17 +109,17 @@ static const int8_t SERVO_TRIM[18] = {
 };
 
 /* ------------------------------------------------------------------------
- * 通用换算：以“该关节机械中位对应的 IK 角 = midDeg”为锚点做线性映射
+ * 通用换算：以“该关节机械中位对应的 IK 角 = midDeg”为锚点做线性映射,将弧度转换为角度
  *   servo = 90 + DIR × (ikDeg − midDeg) + trim，然后限幅到 [minDeg, maxDeg]
  * ------------------------------------------------------------------------ */
 static uint8_t joint_angle(uint8_t ch, float ikDeg, int8_t dir, float midDeg,
                            float minDeg, float maxDeg) {
     float servo = SERVO_MID_DEG + (float)dir * (ikDeg - midDeg);
     if (ch < 18) {
-        servo += (float)SERVO_TRIM[ch];
+        servo += (float)SERVO_TRIM[ch]; //微调修正
     }
-    if (servo < minDeg) servo = minDeg;
-    if (servo > maxDeg) servo = maxDeg;
+    if (servo < minDeg) servo = minDeg;//低于最小值修正
+    if (servo > maxDeg) servo = maxDeg;//高于最大值修正
     return (uint8_t)(servo + 0.5f);
 }
 
