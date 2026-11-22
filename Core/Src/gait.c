@@ -97,7 +97,7 @@ static const float HIP_MID_DEG[LEG_NUM] = {
 /* 每腿每关节方向：+1 正常，−1 反向（左右镜像安装，见 M4）。
  * 哪条腿转反了就把对应格子改成 -1，不要改 IK 公式里的符号。 */
 static const int8_t DIR_HIP[LEG_NUM]   = { 1, 1, 1, -1, -1, -1};
-static const int8_t DIR_FEMUR[LEG_NUM] = { 1, 1, 1,  1,  1,  1};
+static const int8_t DIR_FEMUR[LEG_NUM] = { -1, -1, -1,  -1,  -1,  -1};
 static const int8_t DIR_TIBIA[LEG_NUM] = { 1, 1, 1,  1,  1,  1};
 
 /* 18 路微调（单位：度），下标 = 逻辑通道号 = 腿号*3 + (0 髋 / 1 股 / 2 膝)
